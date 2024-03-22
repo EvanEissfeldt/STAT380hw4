@@ -1,30 +1,34 @@
 ---
 title: "Homework 4"
-author: "[Insert your name here]{style='background-color: yellow;'}"
+author: "[Evan Eissfeldt]{style='background-color: yellow;'}"
 toc: true
 title-block-banner: true
 title-block-style: default
 format: html
 # format: pdf
+editor: 
+  markdown: 
+    wrap: 72
 ---
 
----
+------------------------------------------------------------------------
 
 ::: {.callout-important style="font-size: 0.8em;"}
+Please read the instructions carefully before submitting your
+assignment.
 
-Please read the instructions carefully before submitting your assignment.
+1.  This assignment requires you to only upload a `PDF` file on Canvas
+2.  Don't collapse any code cells before submitting.
+3.  Remember to make sure all your code output is rendered properly
+    before uploading your submission.
 
-1. This assignment requires you to only upload a `PDF` file on Canvas
-1. Don't collapse any code cells before submitting. 
-1. Remember to make sure all your code output is rendered properly before uploading your submission.
-
-⚠️ Please add your name to the author information in the frontmatter before submitting your assignment ⚠️
+⚠️ Please add your name to the author information in the frontmatter
+before submitting your assignment ⚠️
 :::
-
 
 We will be using the following libraries:
 
-```R
+```{r}
 packages <- c(
   "dplyr", 
   "readr", 
@@ -39,23 +43,23 @@ packages <- c(
   "broom"
 )
 
-# renv::install(packages)
+renv::install(packages)
 sapply(packages, require, character.only=T)
 ```
 
-<br><br><br><br>
----
+## <br><br><br><br>
 
 ## Question 1
-::: {.callout-tip}
+
+::: callout-tip
 ## 30 points
+
 Automatic differentiation using `torch`
 :::
 
 ###### 1.1 (5 points)
 
-Consider $g(x, y)$ given by
-$$
+Consider $g(x, y)$ given by $$
 g(x, y) = (x - 3)^2 + (y - 4)^2.
 $$
 
@@ -63,27 +67,49 @@ Using elementary calculus derive the expressions for
 
 $$
 \frac{d}{dx}g(x, y), \quad \text{and} \quad \frac{d}{dy}g(x, y).
-$$
+$$ d/dx \* g(x, y) = 2(x-3)
 
-Using your answer from above, what is the answer to
-$$
+d/dy \* g(x, y) = 2(y - 4)
+
+Using your answer from above, what is the answer to $$
 \frac{d}{dx}g(x, y) \Bigg|_{(x=3, y=4)} \quad \text{and} \quad \frac{d}{dy}g(x, y) \Bigg|_{(x=3, y=4)} ?
-$$
+$$ d/dx \* g(x, y) when (x = 3, y = 4) = 2(3-3) = 0
 
-Define $g(x, y)$ as a function in R, compute the gradient of $g(x, y)$ with respect to $x=3$ and $y=4$. Does the answer match what you expected?
+d/dy \* g(x, y) when (x = 3, y = 4) = 2(4-4) = 0
 
----
+Define $g(x, y)$ as a function in R, compute the gradient of $g(x, y)$
+with respect to $x=3$ and $y=4$. Does the answer match what you
+expected?
+
+```{R}
+g <- function(x, y) {
+  return((x - 3)^2 + (y - 4)^2)
+}
+```
+
+```{R}
+gradient_g <- function(x, y) {
+  dgdx <- 2 * (x - 3)
+  dgdy <- 2 * (y - 4)
+  return(c(dgdx, dgdy))
+  }
+
+gradient_g(3, 4)
+```
+
+Yes, the answer matched what I expected, as 0 and 0 is equal to my
+previous calculation.
+
+------------------------------------------------------------------------
 
 ###### 1.2 (10 points)
 
-
 $$\newcommand{\u}{\boldsymbol{u}}\newcommand{\v}{\boldsymbol{v}}$$
 
-Consider $h(\u, \v)$ given by
-$$
+Consider $h(\u, \v)$ given by $$
 h(\u, \v) = (\u \cdot \v)^3,
-$$
-where $\u \cdot \v$ denotes the dot product of two vectors, i.e., $\u \cdot \v = \sum_{i=1}^n u_i v_i.$
+$$ where $\u \cdot \v$ denotes the dot product of two vectors, i.e.,
+$\u \cdot \v = \sum_{i=1}^n u_i v_i.$
 
 Using elementary calculus derive the expressions for the gradients
 
@@ -93,7 +119,10 @@ $$
 \end{aligned}
 $$
 
-Using your answer from above, what is the answer to $\nabla_\u h(\u, \v)$ when $n=10$ and
+Answer: (3(u\*v)\^2)v1, (3(u\*v)\^2)v2, ... , (3(u\*v)\^2)vn
+
+Using your answer from above, what is the answer to
+$\nabla_\u h(\u, \v)$ when $n=10$ and
 
 $$
 \begin{aligned}
@@ -102,139 +131,262 @@ $$
 \end{aligned}
 $$
 
-Define $h(\u, \v)$ as a function in R, initialize the two vectors $\u$ and $\v$ as `torch_tensor`s. Compute the gradient of $h(\u, \v)$ with respect to $\u$. Does the answer match what you expected?
+Define $h(\u, \v)$ as a function in R, initialize the two vectors $\u$
+and $\v$ as `torch_tensor`s. Compute the gradient of $h(\u, \v)$ with
+respect to $\u$. Does the answer match what you expected?
 
----
+```{r}
+library(torch)
+```
+
+```{R}
+h <- function(u, v) {
+  return((sum(u * v))^3)
+}
+
+```
+
+```{R}
+u <- torch_tensor(c(-1, 1, -1, 1, -1, 1, -1, 1, -1, 1), requires_grad=T)
+v <- torch_tensor(c(-1, -1, -1, -1, -1, 1, 1, 1, 1, 1), requires_grad=T)
+
+```
+
+```{R}
+z <- h(u, v)
+z
+```
+
+```{r}
+z$backward()
+print(u$grad)
+```
+
+This answer does match my expectation because 3 \* 2\^2 = 3 \*4 = 12.
+
+------------------------------------------------------------------------
 
 ###### 1.3 (5 points)
 
-Consider the following function
-$$
+Consider the following function $$
 f(z) = z^4 - 6z^2 - 3z + 4
 $$
 
-Derive the expression for 
-$$
+Derive the expression for $$
 f'(z_0) = \frac{df}{dz}\Bigg|_{z=z_0}
-$$
-and evaluate $f'(z_0)$ when $z_0 = -3.5$.
+$$ and evaluate $f'(z_0)$ when $z_0 = -3.5$.
 
-Define $f(z)$ as a function in R, and using the `torch` library compute $f'(-3.5)$. 
+f'(z) = 4z\^3 -12z
 
+Define $f(z)$ as a function in R, and using the `torch` library compute
+$f'(-3.5)$.
 
----
+```{r}
+f <- function(z) {
+  return(z^4 - 6*z^2 - 3*z + 4)
+}
+```
+
+```{r}
+z <- torch_tensor(-3.5, requires_grad = TRUE)
+fz <- f(z)
+fz$backward()
+```
+
+```{r}
+z$grad
+```
+
+------------------------------------------------------------------------
 
 ###### 1.4 (5 points)
 
-For the same function $f$, initialize $z[1] = -3.5$, and perform $n=100$ iterations of **gradient descent**, i.e., 
+For the same function $f$, initialize $z[1] = -3.5$, and perform $n=100$
+iterations of **gradient descent**, i.e.,
 
-> $z[{k+1}] = z[k] - \eta f'(z[k]) \ \ \ \ $ for $k = 1, 2, \dots, 100$
+> \$z\[{k+1}\] = z\[k\] - \eta f'(z\[k\])    \$ for
+> $k = 1, 2, \dots, 100$
 
-Plot the curve $f$ and add taking $\eta = 0.02$, add the points $\{z_0, z_1, z_2, \dots z_{100}\}$ obtained using gradient descent to the plot. What do you observe?
+Plot the curve $f$ and add taking $\eta = 0.02$, add the points
+$\{z_0, z_1, z_2, \dots z_{100}\}$ obtained using gradient descent to
+the plot. What do you observe?
 
----
+```{r}
+f_prime <- function(z) {
+  return(4 * z^3 - 12 * z)
+}
+```
+
+```{r}
+z_init <- -3.5
+eta <- 0.02
+n <- 100
+```
+
+```{r}
+z_values <- numeric(n)
+z <- z_init
+for (i in 1:n) {
+  z_values[i] <- z
+  z <- z - eta * f_prime(z)
+}
+```
+
+```{r}
+z_points <- data.frame(x = z_values, y = f(z_values))
+```
+
+```{r}
+ggplot(data.frame(x = seq(-4, 4, length.out = 1000)), aes(x)) +
+  geom_line(aes(y = f(x)), color = "blue", size = 1) +
+  geom_point(data = z_points, aes(y = y), color = "red", size = 2) +
+  labs(x = "z", y = "f(z)") +
+  theme_minimal()
+
+```
+
+------------------------------------------------------------------------
+
+I observe that this gradient descent failed to reach the minimum. The
+red dots represent the values obtained from gradient descent
+optimization, and we can see how these dots do not inhabit the actual
+minimum around z = 2.
 
 ###### 1.5 (5 points)
 
+Redo the same analysis as **Question 1.4**, but this time using
+$\eta = 0.03$. What do you observe? What can you conclude from this
+analysis
 
-Redo the same analysis as **Question 1.4**, but this time using $\eta = 0.03$. What do you observe? What can you conclude from this analysis
+```{r}
+f_prime <- function(z) {
+  return(4 * z^3 - 12 * z)
+}
 
+z_init <- -3.5
+eta <- 0.03
+n <- 100
 
+z_values <- numeric(n)
+z <- z_init
+for (i in 1:n) {
+  z_values[i] <- z
+  z <- z - eta * f_prime(z)
+}
 
+z_points <- data.frame(x = z_values, y = f(z_values))
 
-<br><br><br><br>
-<br><br><br><br>
----
+ggplot(data.frame(x = seq(-4, 4, length.out = 1000)), aes(x)) +
+  geom_line(aes(y = f(x)), color = "blue", size = 1) +
+  geom_point(data = z_points, aes(y = y), color = "red", size = 2) +
+  labs(x = "z", y = "f(z)") +
+  theme_minimal()
+```
+
+We can see that this gradient decent outperformed the previous one, as
+the f(z) achieved is lower than in the previous descent.
+
+<br><br><br><br> <br><br><br><br> ---
 
 ## Question 2
-::: {.callout-tip}
+
+::: callout-tip
 ## 50 points
+
 Logistic regression and interpretation of effect sizes
 :::
 
-For this question we will use the **Titanic** dataset from the Stanford data archive. This dataset contains information about passengers aboard the Titanic and whether or not they survived. 
+For this question we will use the **Titanic** dataset from the Stanford
+data archive. This dataset contains information about passengers aboard
+the Titanic and whether or not they survived.
 
-
----
+------------------------------------------------------------------------
 
 ###### 2.1 (5 points)
 
-Read the data from the following URL as a tibble in R. Preprocess the data such that the variables are of the right data type, e.g., binary variables are encoded as factors, and convert all column names to lower case for consistency. Let's also rename the response variable `Survival` to `y` for convenience.
+Read the data from the following URL as a tibble in R. Preprocess the
+data such that the variables are of the right data type, e.g., binary
+variables are encoded as factors, and convert all column names to lower
+case for consistency. Let's also rename the response variable `Survival`
+to `y` for convenience.
 
-```R
+``` {r}
 url <- "https://web.stanford.edu/class/archive/cs/cs109/cs109.1166/stuff/titanic.csv"
+df <- read.csv(url)
+```
+```{r}
 
-df <- ... # Insert your code here
 ```
 
----
+------------------------------------------------------------------------
 
 ###### 2.2 (5 points)
 
-Visualize the correlation matrix of all numeric columns in `df` using `corrplot()`
+Visualize the correlation matrix of all numeric columns in `df` using
+`corrplot()`
 
-```R
+``` r
 df %>% ... # Insert your code here
 ```
 
-
-
----
+------------------------------------------------------------------------
 
 ###### 2.3 (10 points)
 
-Fit a logistic regression model to predict the probability of surviving the titanic as a function of:
+Fit a logistic regression model to predict the probability of surviving
+the titanic as a function of:
 
-* `pclass`
-* `sex`
-* `age`
-* `fare`
-* `# siblings`
-* `# parents`
+-   `pclass`
+-   `sex`
+-   `age`
+-   `fare`
+-   `# siblings`
+-   `# parents`
 
-
-```R
+``` r
 full_model <- ... # Insert your code here
 summary(full_model)
 ```
 
----
+------------------------------------------------------------------------
 
 ###### 2.4 (30 points)
 
-Provide an interpretation for the slope and intercept terms estimated in `full_model` in terms of the log-odds of survival in the titanic and in terms of the odds-ratio (if the covariate is also categorical).
+Provide an interpretation for the slope and intercept terms estimated in
+`full_model` in terms of the log-odds of survival in the titanic and in
+terms of the odds-ratio (if the covariate is also categorical).
 
-::: {.callout-hint}
+::: callout-hint
 ## 
-Recall the definition of logistic regression from the lecture notes, and also recall how we interpreted the slope in the linear regression model (particularly when the covariate was categorical).
+
+Recall the definition of logistic regression from the lecture notes, and
+also recall how we interpreted the slope in the linear regression model
+(particularly when the covariate was categorical).
 :::
 
-
-<br><br><br><br>
-<br><br><br><br>
----
+<br><br><br><br> <br><br><br><br> ---
 
 ## Question 3
-::: {.callout-tip}
+
+::: callout-tip
 ## 70 points
 
 Variable selection and logistic regression in `torch`
-
 :::
 
-
----
+------------------------------------------------------------------------
 
 ###### 3.1 (15 points)
 
-Complete the following function `overview` which takes in two categorical vectors (`predicted` and `expected`) and outputs:
+Complete the following function `overview` which takes in two
+categorical vectors (`predicted` and `expected`) and outputs:
 
-* The prediction accuracy
-* The prediction error
-* The false positive rate, and
-* The false negative rate
+-   The prediction accuracy
+-   The prediction error
+-   The false positive rate, and
+-   The false negative rate
 
-```R
+``` r
 overview <- function(predicted, expected){
     accuracy <- ... # Insert your code here
     error <- ... # Insert your code here
@@ -255,53 +407,59 @@ overview <- function(predicted, expected){
 }
 ```
 
-You can check if your function is doing what it's supposed to do by evaluating
+You can check if your function is doing what it's supposed to do by
+evaluating
 
-```R
+``` r
 overview(df$y, df$y)
 ```
-and making sure that the accuracy is $100\%$ while the errors are $0\%$.
----
+
+## and making sure that the accuracy is $100\%$ while the errors are $0\%$.
 
 ###### 3.2 (5 points)
 
 Display an overview of the key performance metrics of `full_model`
 
-```R
+``` r
 ... # Insert your code here
 ```
 
----
+------------------------------------------------------------------------
 
-###### 3.3  (5 points)
+###### 3.3 (5 points)
 
-Using backward-stepwise logistic regression, find a parsimonious altenative to `full_model`, and print its `overview`
+Using backward-stepwise logistic regression, find a parsimonious
+altenative to `full_model`, and print its `overview`
 
-```R
+``` r
 step_model <- ... # Insert your code here. 
 summary(step_model)
 ```
 
-```R
+``` r
 step_predictions <- ... # Insert your code here
 overview(step_predictions, df$y)
 ```
 
----
+------------------------------------------------------------------------
 
-###### 3.4  (15 points)
+###### 3.4 (15 points)
 
-Using the `caret` package, setup a **$5$-fold cross-validation** training method using the `caret::trainConrol()` function
+Using the `caret` package, setup a $5$-fold cross-validation training
+method using the `caret::trainConrol()` function
 
-```R
+``` r
 controls <- trainControl() # ... insert your code here
 ```
 
-Now, using `control`, perform $5$-fold cross validation using `caret::train()` to select the optimal $\lambda$ parameter for LASSO with logistic regression. 
+Now, using `control`, perform $5$-fold cross validation using
+`caret::train()` to select the optimal $\lambda$ parameter for LASSO
+with logistic regression.
 
-Take the search grid for $\lambda$ to be in $\{ 2^{-20}, 2^{-19.5}, 2^{-19}, \dots, 2^{-0.5}, 2^{0} \}$.
+Take the search grid for $\lambda$ to be in
+$\{ 2^{-20}, 2^{-19.5}, 2^{-19}, \dots, 2^{-0.5}, 2^{0} \}$.
 
-```R
+``` r
 # Insert your code in the ... region
 lasso_fit <- train(
   x = ...,
@@ -315,28 +473,35 @@ lasso_fit <- train(
   family = ...
 )
 ```
-Using the information stored in `lasso_fit$results`, plot the results for  cross-validation accuracy vs. $log_2(\lambda)$. Choose the optimal $\lambda^*$, and report your results for this value of $\lambda^*$.
 
----
+Using the information stored in `lasso_fit$results`, plot the results
+for cross-validation accuracy vs. $log_2(\lambda)$. Choose the optimal
+$\lambda^*$, and report your results for this value of $\lambda^*$.
 
-###### 3.5  (25 points)
+------------------------------------------------------------------------
 
-First, use the `model.matrix()` function to convert the covariates of `df` to a matrix format
+###### 3.5 (25 points)
 
-```R
+First, use the `model.matrix()` function to convert the covariates of
+`df` to a matrix format
+
+``` r
 covariate_matrix <- model.matrix(full_model)[, -1]
 ```
 
-Now, initialize the covariates $X$ and the response $y$ as `torch` tensors
+Now, initialize the covariates $X$ and the response $y$ as `torch`
+tensors
 
-```R
+``` r
 X <- ... # Insert your code here
 y <- ... # Insert your code here
 ```
 
-Using the `torch` library, initialize an `nn_module` which performs logistic regression for this dataset. (Remember that we have 6 different covariates)
+Using the `torch` library, initialize an `nn_module` which performs
+logistic regression for this dataset. (Remember that we have 6 different
+covariates)
 
-```R
+``` r
 logistic <- nn_module(
   initialize = function() {
     self$f <- ... # Insert your code here
@@ -350,24 +515,27 @@ logistic <- nn_module(
 f <- logistic()
 ```
 
-You can verify that your code is right by checking that the output to the following code is a vector of probabilities:
+You can verify that your code is right by checking that the output to
+the following code is a vector of probabilities:
 
-```R
+``` r
 f(X)
 ```
 
+Now, define the loss function `Loss()` which takes in two tensors `X`
+and `y` and a function `Fun`, and outputs the **Binary cross Entropy
+loss** between `Fun(X)` and `y`.
 
-Now, define the loss function `Loss()` which takes in two tensors `X` and `y` and a function `Fun`, and outputs the **Binary cross Entropy loss** between `Fun(X)` and `y`. 
-
-```R
+``` r
 Loss <- function(X, y, Fun){
   ... # Insert our code here
 }
 ```
 
-Initialize an optimizer using `optim_adam()` and perform $n=1000$ steps of gradient descent in order to fit logistic regression using `torch`.
+Initialize an optimizer using `optim_adam()` and perform $n=1000$ steps
+of gradient descent in order to fit logistic regression using `torch`.
 
-```R
+``` r
 f <- logistic()
 optimizer <- optim_adam(...) # Insert your code here
 
@@ -375,31 +543,29 @@ n <- 1000
 ...  # Insert your code for gradient descent here
 ```
 
-Using the final, optimized parameters of `f`, compute the compute the predicted results on `X`
+Using the final, optimized parameters of `f`, compute the compute the
+predicted results on `X`
 
-```R
+``` r
 predicted_probabilities <- f(X) %>% as_array()
 torch_predictions <- ... # Insert your code here
 
 overview(torch_predictions, df$y)
 ```
 
----
+------------------------------------------------------------------------
 
-###### 3.6  (5 points)
+###### 3.6 (5 points)
 
-Create a summary table of the `overview()` summary statistics for each of the $4$ models we have looked at in this assignment, and comment on their relative strengths and drawbacks. 
+Create a summary table of the `overview()` summary statistics for each
+of the $4$ models we have looked at in this assignment, and comment on
+their relative strengths and drawbacks.
 
-
-:::{.hidden unless-format="pdf"}
+::: {.hidden unless-format="pdf"}
 \pagebreak
 :::
 
-<br><br><br><br>
-<br><br><br><br>
----
-
-
+<br><br><br><br> <br><br><br><br> ---
 
 ::: {.callout-note collapse="true"}
 ## Session Information
