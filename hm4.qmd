@@ -310,12 +310,15 @@ variables are encoded as factors, and convert all column names to lower
 case for consistency. Let's also rename the response variable `Survival`
 to `y` for convenience.
 
-``` {r}
+```{r}
 url <- "https://web.stanford.edu/class/archive/cs/cs109/cs109.1166/stuff/titanic.csv"
 df <- read.csv(url)
 ```
-```{r}
 
+```{r}
+df$Survived <- factor(df$Survived)
+names(df) <- tolower(names(df))
+df <- df %>% rename(y = survived)
 ```
 
 ------------------------------------------------------------------------
@@ -325,8 +328,10 @@ df <- read.csv(url)
 Visualize the correlation matrix of all numeric columns in `df` using
 `corrplot()`
 
-``` r
-df %>% ... # Insert your code here
+```{r}
+df_n <- df %>% select(age, siblings.spouses.aboard, parents.children.aboard, fare)
+
+corrplot(cor(df_n))
 ```
 
 ------------------------------------------------------------------------
@@ -343,8 +348,8 @@ the titanic as a function of:
 -   `# siblings`
 -   `# parents`
 
-``` r
-full_model <- ... # Insert your code here
+```{r}
+full_model <- glm(y ~ pclass + sex + age + fare + siblings.spouses.aboard + parents.children.aboard, data = df, family = binomial)
 summary(full_model)
 ```
 
@@ -363,6 +368,21 @@ Recall the definition of logistic regression from the lecture notes, and
 also recall how we interpreted the slope in the linear regression model
 (particularly when the covariate was categorical).
 :::
+
+The intercept of 5.297252 is the log-odds of survival when all other
+variables are zero. The pclass slope of -1.177659 represents the
+decrease of the log-odds for survival per one unit of change of pclass.
+The sexmale slope of -2.757282 represents the decrease of the log-odds
+for when the person was a male. The age slope of -0.043474 represents
+the decrease of the log-odds for survival per one unit of change of age.
+The fare slope of 0.002786 represents the increase of the log-odds for
+survival per one unit of change of fare. The siblings.spouses.aboard
+slope of -0.401831 represents the decrease of the log-odds for survival
+per one unit of change of siblings.spouses.aboard. The
+parents.children.aboard slope of -0.106505 represents the decrease of
+the log-odds for survival per one unit of change of
+parents.children.aboard. The far and parents.children.aboard variables
+were not statistically significant.
 
 <br><br><br><br> <br><br><br><br> ---
 
@@ -386,7 +406,7 @@ categorical vectors (`predicted` and `expected`) and outputs:
 -   The false positive rate, and
 -   The false negative rate
 
-``` r
+``` {r}
 overview <- function(predicted, expected){
     accuracy <- ... # Insert your code here
     error <- ... # Insert your code here
